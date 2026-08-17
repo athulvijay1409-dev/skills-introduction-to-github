@@ -72,11 +72,16 @@ jobs:
       - name: Check PR title for keyphrase
         id: check-pr-title
         continue-on-error: true
-        uses: skills/action-keyphrase-checker@v1
-        with:
-          keyphrase: "Add my first file"
-          text: ${{ github.event.pull_request.title }}
-          case-sensitive: false
+        run: |
+          PR_TITLE_LOWER=$(printf '%s' "$PR_TITLE" | tr '[:upper:]' '[:lower:]')
+          if [[ "$PR_TITLE_LOWER" == *"add my first file"* || "$PR_TITLE_LOWER" == *"create profile.md"* ]]; then
+            echo "Found accepted keyphrase in PR title"
+          else
+            echo "::error::Expected PR title to include \"Add my first file\" or \"Create PROFILE.md\""
+            exit 1
+          fi
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
 
       - name: Check PR description is non-empty
         id: check-pr-description
